@@ -1,67 +1,66 @@
-import { useState, useEffect, FormEvent } from 'react'
-import './App.css'
+import { useState, useEffect, FormEvent } from "react";
+import "./App.css";
 
-const STORAGE_KEY = 'api_token'
+const STORAGE_KEY = "api_token";
 
 interface Item {
-  id: number
-  type: string
-  title: string
-  created_at: string
+  id: number;
+  type: string;
+  title: string;
+  description: string; // ← добавлено
+  created_at: string;
 }
 
 function App() {
   const [token, setToken] = useState(
-    () => localStorage.getItem(STORAGE_KEY) ?? '',
-  )
-  const [draft, setDraft] = useState('')
-  const [items, setItems] = useState<Item[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+    () => localStorage.getItem(STORAGE_KEY) ?? "",
+  );
+  const [draft, setDraft] = useState("");
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return
-
-    setLoading(true)
-    setError(null)
-
-    fetch('/items', {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
+    fetch("/items", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json()
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
       })
       .then((data: Item[]) => {
-        setItems(data)
-        setLoading(false)
+        setItems(data);
+        setLoading(false);
       })
       .catch((err: Error) => {
-        setError(err.message)
-        setLoading(false)
-      })
-  }, [token])
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [token]);
 
   function handleConnect(e: FormEvent) {
-    e.preventDefault()
-    const trimmed = draft.trim()
-    if (!trimmed) return
-    localStorage.setItem(STORAGE_KEY, trimmed)
-    setToken(trimmed)
+    e.preventDefault();
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    localStorage.setItem(STORAGE_KEY, trimmed);
+    setToken(trimmed);
   }
 
   function handleDisconnect() {
-    localStorage.removeItem(STORAGE_KEY)
-    setToken('')
-    setDraft('')
-    setItems([])
-    setError(null)
+    localStorage.removeItem(STORAGE_KEY);
+    setToken("");
+    setDraft("");
+    setItems([]);
+    setError(null);
   }
 
   if (!token) {
     return (
       <form className="token-form" onSubmit={handleConnect}>
-        <h1>API Token</h1>
+        <h1>API Token - SMALL VISIBLE CHANGE</h1>
         <p>Enter your API token to connect.</p>
         <input
           type="password"
@@ -71,7 +70,7 @@ function App() {
         />
         <button type="submit">Connect</button>
       </form>
-    )
+    );
   }
 
   return (
@@ -93,6 +92,7 @@ function App() {
               <th>ID</th>
               <th>Type</th>
               <th>Title</th>
+              <th>Description</th> {/* ← новая колонка */}
               <th>Created at</th>
             </tr>
           </thead>
@@ -102,6 +102,8 @@ function App() {
                 <td>{item.id}</td>
                 <td>{item.type}</td>
                 <td>{item.title}</td>
+                <td>{item.description || "—"}</td>{" "}
+                {/* ← новая ячейка + защита от пустого значения */}
                 <td>{item.created_at}</td>
               </tr>
             ))}
@@ -109,7 +111,7 @@ function App() {
         </table>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
