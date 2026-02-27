@@ -24,3 +24,23 @@ def test_filter_returns_interaction_with_matching_ids() -> None:
     result = _filter_by_item_id(interactions, 1)
     assert len(result) == 1
     assert result[0].id == 1
+
+
+def test_filter_excludes_interaction_with_different_learner_id() -> None:
+    # Arrange
+    interactions = [
+        _make_log(id=1, learner_id=1, item_id=1),  # should match
+        _make_log(
+            id=2, learner_id=2, item_id=1
+        ),  # same item_id, different learner → should match (according to current spec)
+        _make_log(id=3, learner_id=3, item_id=5),  # different item → should be excluded
+    ]
+
+    # Act
+    result = _filter_by_item_id(interactions, item_id=1)
+
+    # Assert
+    assert len(result) == 2, (
+        "Should return both interactions with item_id=1 regardless of learner_id"
+    )
+    assert {log.id for log in result} == {1, 2}
